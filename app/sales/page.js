@@ -18,7 +18,7 @@ export default async function SalesPage({ searchParams }) {
   ]);
   return (
     <>
-      <h1>Ventas entre miembros</h1>
+      <h1>Productos a la venta</h1>
       <p className="mut">Las ventas se tratan directamente con el vendedor; el club no interviene.</p>
       {!ok ? <NeedMsg u={u} what="publicar productos" /> : (
         <details>
