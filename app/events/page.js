@@ -5,6 +5,7 @@ import { todayMx, fdate } from '@/lib/config';
 import { eventAdd, eventDel } from '../actions';
 import UploadForm from '@/components/UploadForm';
 import { Confirm, Hidden, Lines } from '@/components/Bits';
+import Page from '@/components/Page';
 
 export const metadata = { title: 'Eventos' };
 
@@ -40,7 +41,7 @@ export default async function EventsPage() {
     q('SELECT * FROM events WHERE "date" < $1 ORDER BY "date" DESC LIMIT 12', [today]),
   ]);
   return (
-    <>
+    <Page>
       <h1>Eventos</h1>
       {admin && (
         <details style={{ marginBottom: '1.5rem' }}>
@@ -60,6 +61,6 @@ export default async function EventsPage() {
       {up.map((e) => <EventCard key={e.id} e={e} admin={admin} />)}
       {!up.length && <p className="mut">No hay eventos próximos por ahora.</p>}
       {past.length > 0 && <><h2>Eventos pasados</h2>{past.map((e) => <EventCard key={e.id} e={e} admin={admin} />)}</>}
-    </>
+    </Page>
   );
 }

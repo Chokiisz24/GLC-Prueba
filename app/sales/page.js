@@ -5,6 +5,8 @@ import { productUpload, delProduct } from '../actions';
 import UploadForm from '@/components/UploadForm';
 import Pager, { curPage } from '@/components/Pager';
 import { Img, Hidden, Lines, NeedMsg } from '@/components/Bits';
+import Page from '@/components/Page';
+import ProductGrid from '@/components/ProductGrid';
 
 export const metadata = { title: 'Ventas' };
 const PER = 12;
@@ -17,8 +19,8 @@ export default async function SalesPage({ searchParams }) {
     one('SELECT COUNT(*) AS c FROM products'),
   ]);
   return (
-    <>
-      <h1>Productos a la venta</h1>
+    <Page>
+      <h1>Ventas entre miembros</h1>
       <p className="mut">Las ventas se tratan directamente con el vendedor; el club no interviene.</p>
       {!ok ? <NeedMsg u={u} what="publicar productos" /> : (
         <details>
@@ -33,21 +35,12 @@ export default async function SalesPage({ searchParams }) {
           </UploadForm>
         </details>
       )}
-      <div className="grid" style={{ marginTop: '1rem' }}>
-        {list.map((r) => (
-          <div className="card" key={r.id}>
-            <Img src={r.photo} />
-            <h3>{r.title}</h3>
-            <b style={{ color: 'var(--a)' }}>{r.price}</b>
-            <p><Lines text={r.descr} /></p>
-            <small>Vende: {r.name}<br />📞 {r.contact}</small>
-            {ok && (u.id === r.user_id || isAdmin(u)) && (
-              <form action={delProduct} style={{ marginTop: '.5rem' }}><Hidden name="id" value={r.id} /><button className="danger">Eliminar</button></form>
-            )}
-          </div>
-        ))}
-      </div>
+      <ProductGrid delAction={delProduct} items={list.map((r) => ({
+        id: r.id, title: r.title, price: r.price, descr: r.descr, contact: r.contact, photo: r.photo, name: r.name,
+        canDelete: !!(ok && (u.id === r.user_id || isAdmin(u))),
+      }))} />
+      {!list.length && <p className="mut">Todavía no hay productos a la venta.</p>}
       <Pager total={total.c} per={PER} page={page} base="/sales" />
-    </>
+    </Page>
   );
 }

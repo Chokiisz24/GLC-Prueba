@@ -51,6 +51,9 @@ Con `DEBUG_MAIL=true` los códigos de verificación aparecen en pantalla y en la
 - `npm run mail:test -- tucorreo@gmail.com` → prueba la configuración SMTP.
 
 ## Correo (Gmail)
+**Diagnóstico:** en ⚙ Admin → *Correo* (solo super admin) ves si las variables están bien, el resultado del último envío con el
+motivo exacto si falló, y un botón **Enviar correo de prueba**.
+
 Activa la verificación en 2 pasos en tu cuenta de Google, crea una contraseña de aplicación en
 https://myaccount.google.com/apppasswords y ponla en `SMTP_PASS`. Si `SMTP_USER`/`SMTP_PASS` faltan, los correos no se envían (se registra un aviso en los logs de Vercel).
 
@@ -58,6 +61,11 @@ https://myaccount.google.com/apppasswords y ponla en `SMTP_PASS`. Si `SMTP_USER`
 No se registra, no aparece en Miembros, Directiva ni en el panel, y nadie puede borrarlo ni degradarlo desde la web.
 Para cambiar su contraseña genera un hash nuevo, actualiza `SUPER_HASH_B64` en Vercel y vuelve a desplegar.
 Si dejas `SUPER_EMAIL` vacío, el primer usuario que verifique su correo se vuelve Administrador y Líder.
+
+## Directiva
+En ⚙ Admin → *Miembros y roles* (solo super admin), cada miembro tiene la casilla **Directiva**, su **cargo** (Presidente,
+Tesorero…) y su **orden** (0 = primero). Los marcados aparecen en la sección Directiva, solo como información: su perfil sigue
+en Miembros con una insignia de su cargo. Ser directiva no da permisos de administrador; eso es el rol *Administrador*, por separado.
 
 ## Permisos
 | Acción | Miembro | Admin | Super admin |
@@ -74,6 +82,15 @@ Fotos hasta 8 MB, videos MP4/WebM hasta 100 MB (`lib/limits.js`). Los archivos s
 así que no aplica el límite de 4.5 MB de las funciones de Vercel. Revisa las cuotas del plan gratuito de Vercel Blob y Neon
 si el club sube muchos videos.
 
+## Si no llegan los correos
+Entra como super admin → ⚙ Admin → sección **Correo**. Ahí ves si las variables están bien y puedes mandar un
+**correo de prueba**: si falla, muestra el motivo exacto (contraseña rechazada, variable faltante, no conecta…).
+Causas más comunes:
+- `SMTP_USER` o `SMTP_PASS` no están en Vercel, o se agregaron sin volver a desplegar (Redeploy).
+- `SMTP_PASS` es la contraseña normal de Gmail o una contraseña de aplicación revocada: crea otra (16 letras).
+- Te registras con un correo que ya estaba verificado: por seguridad no se manda código (usa "¿Olvidaste tu contraseña?").
+- El correo llegó a **Spam**.
+
 ## Seguridad implementada
 Contraseñas con bcrypt · códigos de verificación hasheados (10 min, 5 intentos) · límite de intentos de login, 2FA y recuperación ·
 sesión en cookie firmada HttpOnly/SameSite/Secure que se invalida al cambiar la contraseña · protección CSRF de Server Actions ·
@@ -87,6 +104,7 @@ del usuario · permisos validados en el servidor · mensajes genéricos (no reve
 | Entre páginas | Deslizamiento hacia adelante al entrar a un detalle, hacia atrás al volver, fundido entre secciones del menú; la cabecera queda fija | `components/Page.js`, `app/globals.css` |
 | Menú | Pastilla que se desliza a la sección activa; en celular botón ☰ con panel animado | `components/SiteHeader.js` |
 | Tarjetas | Inclinación 3D con brillo que sigue al cursor (solo con mouse) | `components/CardFx.js` |
+| Aparición | Las tarjetas de Miembros, Directiva, Ventas y Multimedia aparecen en cascada; el perfil del miembro entra por partes | `components/Stagger.js` |
 | Lightbox | La foto crece desde su miniatura, se desliza entre imágenes, deslizar con el dedo en celular | `components/Lightbox.js` |
 | Paneles y avisos | "+ Crear evento", "+ Subir"... se despliegan suave; los avisos de éxito muestran barra de tiempo | `app/globals.css` |
 

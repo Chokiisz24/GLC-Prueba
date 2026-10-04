@@ -4,15 +4,46 @@ import { redirect } from 'next/navigation';
 import { q, one } from '@/lib/db';
 import { pageUser, isAdmin, isSuper } from '@/lib/auth';
 import { getSettings, SOCIAL, FONTS } from '@/lib/config';
-import { approveUser, rejectUser, delUser, setRole, bulk, saveSettings, totpReset } from '../actions';
+import { approveUser, rejectUser, delUser, setRole, bulk, saveSettings, totpReset, testMail } from '../actions';
+import { mailConfig, DEBUG_MAIL } from '@/lib/mail';
+import { fdatetime } from '@/lib/config';
 import UploadForm from '@/components/UploadForm';
 import Pager, { curPage } from '@/components/Pager';
 import { Img, Hidden, Confirm } from '@/components/Bits';
+import Page from '@/components/Page';
 
 export const metadata = { title: 'Administración' };
 const PER = 20;
 const fontName = (f) => (f === FONTS[0] ? 'Sistema (estilo Apple / Google)' : f.split(',')[0].replace(/"/g, '').trim());
 const short = (s, n) => [...(s || '')].slice(0, n).join('');
+
+function MailPanel({ status }) {
+  const c = mailConfig();
+  let last = null;
+  try { last = status ? JSON.parse(status) : null; } catch {}
+  const row = (label, value, good) => (
+    <tr><th style={{ width: 190 }}>{label}</th><td>{good === undefined ? '' : good ? '✅ ' : '❌ '}{value}</td></tr>
+  );
+  return (
+    <>
+      <h2>Correo</h2>
+      <div className="card" style={{ maxWidth: 700 }}>
+        <table><tbody>
+          {row('Cuenta (SMTP_USER)', c.user || 'falta', !!c.user && c.user.includes('@'))}
+          {row('Contraseña (SMTP_PASS)', c.pass ? `${c.pass.length} caracteres${c.pass.length !== 16 ? ' — una contraseña de aplicación de Google tiene 16' : ''}` : 'falta', c.pass.length === 16)}
+          {row('Servidor', `${c.host}:${c.port}`, true)}
+          {row('Modo pruebas (DEBUG_MAIL)', DEBUG_MAIL ? 'activado: los códigos se muestran en pantalla' : 'desactivado', !DEBUG_MAIL)}
+          {row('Último envío', last ? `${last.ok ? 'Enviado' : 'Falló'} a ${last.to} · ${fdatetime(last.t)}${last.ok ? '' : ' — ' + last.detail}` : 'todavía no hay envíos', last ? last.ok : undefined)}
+        </tbody></table>
+        <form action={testMail} className="row">
+          <input type="email" name="to" placeholder="Correo para la prueba" required style={{ flex: 1, minWidth: 200 }} />
+          <button>Enviar correo de prueba</button>
+        </form>
+        <p className="mut" style={{ marginBottom: 0 }}>Si cambias variables en Vercel, vuelve a desplegar (Deployments → ⋯ → Redeploy) para que se apliquen.</p>
+      </div>
+    </>
+  );
+}
 
 function BulkForm({ id, scope, children }) {
   return (
@@ -38,14 +69,14 @@ export default async function AdminPage({ searchParams }) {
   const canTouch = (m) => m.id !== u.id && (m.role !== 'admin' || sup);
 
   return (
-    <>
+    <Page>
       <h1>Configuración de administrador</h1>
       <p><Link className="btn s" href="/security">🔐 Seguridad: verificación en 2 pasos</Link></p>
 
       {/* ---------- Solicitudes de ingreso ---------- */}
       <h2>Solicitudes de ingreso{pend.length ? ` (${pend.length})` : ''}</h2>
       {!pend.length && <p className="mut">No hay solicitudes pendientes.</p>}
-      <div className="grid">
+      <div className="grid no-tilt">
         {pend.map((x) => (
           <div className="card" key={x.id}>
             <label className="inl"><input type="checkbox" name="ids" value={x.id} form="bulkp" /> Seleccionar</label>
@@ -108,11 +139,14 @@ export default async function AdminPage({ searchParams }) {
         </>
       )}
 
+      {/* ---------- Correo (solo super admin): diagnostico y prueba ---------- */}
+      {sup && <MailPanel status={s.mail_status} />}
+
       {/* ---------- Miembros ---------- */}
       <h2>{sup ? 'Miembros y roles' : 'Miembros'}</h2>
       <div className="card tbl">
         <table>
-          <thead><tr><th>Miembro</th><th>Rol / cargo / orden (0 = líder)</th><th></th></tr></thead>
+          <thead><tr><th>Miembro</th><th>Rol · Directiva · cargo · orden (0 = primero)</th><th></th></tr></thead>
           <tbody>
             {users.map((m) => (
               <tr key={m.id}>
@@ -124,12 +158,13 @@ export default async function AdminPage({ searchParams }) {
                   {sup ? (
                     <form action={setRole}>
                       <Hidden name="id" value={m.id} />
-                      <select name="role" className="auto" defaultValue={m.role}><option value="member">Miembro</option><option value="admin">Administrador</option></select>
+                      <select name="role" className="auto" defaultValue={m.role} aria-label="Rol"><option value="member">Miembro</option><option value="admin">Administrador</option></select>
+                      <label className="inl chk"><input type="checkbox" name="board" value="1" defaultChecked={m.board} /> Directiva</label>
                       <input name="title" placeholder="Cargo" defaultValue={m.title} maxLength={60} style={{ width: 130 }} />
                       <input type="number" name="rank" defaultValue={m.rank} style={{ width: 70 }} aria-label="Orden" />
                       <button>OK</button>
                     </form>
-                  ) : (m.role === 'admin' ? 'Administrador' : 'Miembro') + (m.title ? ` · ${m.title}` : '')}
+                  ) : (m.role === 'admin' ? 'Administrador' : 'Miembro') + (m.board ? ' · Directiva' : '') + (m.title ? ` · ${m.title}` : '')}
                 </td>
                 <td>
                   {canTouch(m) && (
@@ -188,6 +223,6 @@ export default async function AdminPage({ searchParams }) {
           )}
         </>
       )}
-    </>
+    </Page>
   );
 }

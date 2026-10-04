@@ -3,13 +3,14 @@ import { redirect } from 'next/navigation';
 import { pageUser } from '@/lib/auth';
 import { getSession } from '@/lib/session';
 import { totpStart, totpOn, totpOff } from '../actions';
+import Page from '@/components/Page';
 
 export default async function SecurityPage() {
   const u = await pageUser();
   if (!u) redirect('/login');
   const fresh = (await getSession()).totp_new;
   return (
-    <>
+    <Page>
       <h1>Seguridad</h1>
       <div className="card" style={{ maxWidth: 560 }}>
         <h2 style={{ marginTop: 0 }}>Verificación en 2 pasos</h2>
@@ -41,6 +42,6 @@ export default async function SecurityPage() {
           </>
         )}
       </div>
-    </>
+    </Page>
   );
 }

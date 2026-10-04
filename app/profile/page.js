@@ -5,12 +5,13 @@ import { me } from '@/lib/auth';
 import { VERSIONS } from '@/lib/config';
 import { saveProfile } from '../actions';
 import UploadForm from '@/components/UploadForm';
+import Page from '@/components/Page';
 
 export default async function ProfilePage() {
   const u = await me();
   if (!u) redirect('/login');
   return (
-    <>
+    <Page>
       <h1>Mi perfil y mi Lancer</h1>
       <p><Link className="btn s" href="/security">🔐 Seguridad: verificación en 2 pasos</Link></p>
       <p className="mut">Todos los campos son obligatorios.</p>
@@ -31,6 +32,6 @@ export default async function ProfilePage() {
         <label>Foto del carro <input type="file" name="car_photo" accept="image/jpeg,image/png,image/webp" required={!u.car_photo} /></label>
         <button>Guardar</button>
       </UploadForm>
-    </>
+    </Page>
   );
 }

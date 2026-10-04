@@ -209,7 +209,48 @@ html.lb-open{overflow:hidden}
 .lb-k{position:absolute;top:1.4rem;left:50%;translate:-50% 0;color:#ffffffb0;font-size:.85rem;letter-spacing:.04em}
 #lb{touch-action:pan-y;background:rgba(0,0,0,.9);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 
+/* ---- Tarjetas que aparecen en cascada (miembros, directiva, ventas, multimedia, galeria) ---- */
+@keyframes card-in{from{opacity:0;transform:translateY(24px) scale(.96)}}
+.stagger>*{animation:card-in .65s var(--ease) backwards;animation-delay:720ms}
+.stagger>:nth-child(1){animation-delay:60ms}.stagger>:nth-child(2){animation-delay:115ms}.stagger>:nth-child(3){animation-delay:170ms}.stagger>:nth-child(4){animation-delay:225ms}.stagger>:nth-child(5){animation-delay:280ms}.stagger>:nth-child(6){animation-delay:335ms}.stagger>:nth-child(7){animation-delay:390ms}.stagger>:nth-child(8){animation-delay:445ms}.stagger>:nth-child(9){animation-delay:500ms}.stagger>:nth-child(10){animation-delay:555ms}.stagger>:nth-child(11){animation-delay:610ms}.stagger>:nth-child(12){animation-delay:665ms}
+.stagger.calm>*{animation:none}
+.grid.spaced{margin-top:1rem}
+/* ---- Perfil del miembro: sus datos entran uno tras otro despues de que llega la foto ---- */
+.rise{animation:card-in .55s var(--ease) backwards;animation-delay:calc(var(--i,0) * 80ms + 200ms)}
+
+/* ---- Directiva ---- */
+.badge{display:block;width:fit-content;margin:.2rem 0 .15rem;padding:.1rem .6rem;border-radius:999px;font-size:.75rem;font-weight:600;
+  background:color-mix(in srgb,var(--a) 14%,transparent);color:var(--a)}
+.chip.board{background:color-mix(in srgb,var(--a) 14%,transparent);color:var(--a);font-weight:600}
+.board .card{text-align:center;padding-bottom:1.3rem}
+.board .card img.portrait{aspect-ratio:1;border-radius:50%;width:72%;margin:.6rem auto 1rem;box-shadow:0 0 0 4px var(--card),0 0 0 6px color-mix(in srgb,var(--a) 55%,transparent)}
+.board .role{display:block;color:var(--a);font-size:.85rem;letter-spacing:.02em}
+.board h3{margin:.15rem 0 .1rem;font-size:1.2rem}
+td label.chk{color:var(--t);font-size:.85rem;white-space:nowrap}
+
 @media(prefers-reduced-motion:reduce){
   ::view-transition-old(*),::view-transition-new(*),::view-transition-group(*){animation-duration:0s!important;animation-delay:0s!important}
   .grid>.card.tilt{transform:none}
 }
+
+/* ---- Ventas: tarjeta clicable y ventana de detalle (la foto crece desde la tarjeta) ---- */
+.card.product{cursor:pointer}
+.card.product:focus-visible{outline:2px solid var(--a);outline-offset:3px}
+.price{color:var(--a);display:block;margin:.1rem 0 .2rem;font-size:1.05rem}
+.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pm{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:1rem;background:rgba(0,0,0,.6);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:vt-fade .3s ease both}
+.pm-card{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);width:min(960px,100%);max-height:calc(100vh - 2rem);
+  overflow:auto;background:var(--card);color:var(--t);border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:pop .4s var(--ease) both}
+.pm-pic{width:100%;height:100%;min-height:320px;max-height:80vh;object-fit:cover;display:block}
+.pm-body{padding:1.6rem 1.6rem 1.4rem;display:flex;flex-direction:column;gap:.2rem}
+.pm-body h2{margin:0 2.5rem .2rem 0}
+.pm-body>*{animation:card-in .5s var(--ease) backwards}
+.pm-body>:nth-child(2){animation-delay:.08s}.pm-body>:nth-child(3){animation-delay:.14s}.pm-body>:nth-child(4){animation-delay:.2s}.pm-body>:nth-child(5){animation-delay:.26s}.pm-body>:nth-child(6){animation-delay:.32s}
+.pm-body .btns{margin:.6rem 0 1rem}
+.pm-x{position:absolute;top:.8rem;right:.8rem;z-index:2;width:40px;height:40px;padding:0;border-radius:50%;font-size:1.5rem;line-height:1;
+  background:color-mix(in srgb,var(--card) 80%,transparent)!important;color:var(--t)!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.pm-x:hover{transform:none;box-shadow:none}
+@media(max-width:700px){.pm{padding:0;place-items:end stretch}.pm-card{grid-template-columns:1fr;border-radius:24px 24px 0 0;max-height:92vh}
+  .pm-pic{min-height:0;aspect-ratio:4/3;height:auto}}
+::view-transition-group(prod-pic){animation-duration:420ms;animation-timing-function:var(--ease);z-index:200}

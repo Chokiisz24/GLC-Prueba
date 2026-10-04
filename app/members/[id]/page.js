@@ -7,6 +7,8 @@ import { MAX_IMG_MB, MAX_VIDEO_MB } from '@/lib/limits';
 import { bioSave, garageUp, garageDel } from '../../actions';
 import UploadForm from '@/components/UploadForm';
 import { Img, Hidden, Lines } from '@/components/Bits';
+import Page, { Morph } from '@/components/Page';
+import { StaggerGrid, BackLink } from '@/components/Stagger';
 
 export default async function MemberPage({ params }) {
   const u = await pageUser();
@@ -18,19 +20,20 @@ export default async function MemberPage({ params }) {
   const items = await q('SELECT * FROM garage WHERE user_id = $1 ORDER BY id DESC', [mid]);
 
   return (
-    <>
-      <Link href="/members">← Miembros</Link>
+    <Page>
+      <BackLink href="/members">← Miembros</BackLink>
       <div className="card" style={{ marginTop: '1rem' }}>
-        <Img src={m.car_photo} className="mcover" />
-        <div className="who">
-          <Img src={m.photo} className="av" />
+        <Morph name={`car-${m.id}`}><Img src={m.car_photo} className="mcover" /></Morph>
+        <div className="who rise" style={{ '--i': 0 }}>
+          <Morph name={`av-${m.id}`}><Img src={m.photo} className="av" /></Morph>
           <div><h1 style={{ margin: 0, fontSize: '2rem' }}>{m.nick}</h1><small>{m.city}, {m.country}</small></div>
         </div>
-        <p>
+        <p className="rise" style={{ '--i': 1 }}>
+          {m.board && <span className="chip board">Directiva · {m.title}</span>}
           <span className="chip">Lancer {m.version} {m.year}</span><span className="chip">{m.color}</span><span className="chip">{m.age} años</span>
         </p>
-        <p><b>Modificaciones:</b> {m.mods}</p>
-        {m.bio && <p><Lines text={m.bio} /></p>}
+        <p className="rise" style={{ '--i': 2 }}><b>Modificaciones:</b> {m.mods}</p>
+        {m.bio && <p className="rise" style={{ '--i': 3 }}><Lines text={m.bio} /></p>}
         {can && own && <Link className="btn s" href="/profile">Editar datos de mi perfil</Link>}
       </div>
 
@@ -58,7 +61,7 @@ export default async function MemberPage({ params }) {
         return (
           <section key={t}>
             <h2>{label}</h2>
-            <div className="grid">
+            <StaggerGrid>
               {list.map((i) => (
                 <div className="card" key={i.id}>
                   {t === 'image'
@@ -68,11 +71,11 @@ export default async function MemberPage({ params }) {
                   {can && <form action={garageDel} style={{ marginTop: '.5rem' }}><Hidden name="id" value={i.id} /><button className="danger">Eliminar</button></form>}
                 </div>
               ))}
-            </div>
+            </StaggerGrid>
           </section>
         );
       })}
       {!items.length && <p className="mut" style={{ marginTop: '1rem' }}>Este miembro aún no ha subido fotos ni videos.</p>}
-    </>
+    </Page>
   );
 }

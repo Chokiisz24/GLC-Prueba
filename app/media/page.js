@@ -7,6 +7,8 @@ import { mediaUpload } from '../actions';
 import UploadForm from '@/components/UploadForm';
 import Pager, { curPage } from '@/components/Pager';
 import { Img, NeedMsg } from '@/components/Bits';
+import Page, { Morph } from '@/components/Page';
+import { StaggerGrid } from '@/components/Stagger';
 
 export const metadata = { title: 'Multimedia' };
 const PER = 12;
@@ -21,7 +23,7 @@ export default async function MediaPage({ searchParams }) {
   ]);
   const short = (s) => [...(s || '')].slice(0, 60).join('');
   return (
-    <>
+    <Page>
       <h1>Multimedia</h1>
       {!ok ? <NeedMsg u={u} what="subir fotos o videos" /> : (
         <details>
@@ -35,14 +37,14 @@ export default async function MediaPage({ searchParams }) {
         </details>
       )}
       <h2>Imágenes</h2>
-      <div className="grid">
-        {imgs.map((m) => <Link className="card" key={m.id} href={`/media/${m.id}`}><Img src={m.file} /><small>{short(m.descr)}</small></Link>)}
-      </div>
+      <StaggerGrid>
+        {imgs.map((m) => <Link className="card" key={m.id} href={`/media/${m.id}`} transitionTypes={['nav-forward']}><Morph name={`media-${m.id}`}><Img src={m.file} /></Morph><small>{short(m.descr)}</small></Link>)}
+      </StaggerGrid>
       <h2>Videos</h2>
-      <div className="grid">
-        {vids.map((m) => <Link className="card" key={m.id} href={`/media/${m.id}`}><video muted preload="metadata" src={`${m.file}#t=0.5`} /><small>{short(m.descr)}</small></Link>)}
-      </div>
+      <StaggerGrid>
+        {vids.map((m) => <Link className="card" key={m.id} href={`/media/${m.id}`} transitionTypes={['nav-forward']}><Morph name={`media-${m.id}`}><video muted preload="metadata" src={`${m.file}#t=0.5`} /></Morph><small>{short(m.descr)}</small></Link>)}
+      </StaggerGrid>
       <Pager total={Math.max(counts.i, counts.v)} per={PER} page={page} base="/media" />
-    </>
+    </Page>
   );
 }

@@ -11,7 +11,7 @@ import { q, one, now } from '@/lib/db';
 import { me, isAdmin, isSuper, superRow, SUPER_EMAIL, SUPER_HASH, pwVerify, pwHash, pwOk, passPrint, homeFor } from '@/lib/auth';
 import { getSession, updateSession, newSession, destroySession } from '@/lib/session';
 import { flash } from '@/lib/flash';
-import { codeMail, resetMail, approvedMail, DEBUG_MAIL } from '@/lib/mail';
+import { codeMail, resetMail, approvedMail, sendMail, DEBUG_MAIL } from '@/lib/mail';
 import { fileField, rmfile, isVideo, UserError } from '@/lib/blob';
 import { VERSIONS, FONTS, SOCIAL, setcfg, getSettings } from '@/lib/config';
 import { newSecret, totpOk } from '@/lib/totp';
@@ -124,7 +124,8 @@ export async function register(fd) {
       const ex = await one('SELECT verified FROM users WHERE email = $1', [em]);
       if (!ex || !ex.verified) {
         await q(`INSERT INTO users(email, pass, created) VALUES($1, $2, $3) ON CONFLICT(email) DO UPDATE SET pass = excluded.pass`, [em, await pwHash(pw), now()]);
-        await codeMail(em, await makeCode(em));
+        const sent = await codeMail(em, await makeCode(em));
+        if (!sent.ok && !DEBUG_MAIL) throw new UserError('No pudimos enviar el código a tu correo en este momento. Intenta más tarde o avisa a un administrador del club.');
       }
     }
     await newSession({ pend: em });                              // un registro nuevo siempre empieza sin sesion previa
@@ -180,7 +181,8 @@ export async function forgot(fd) {
     if (await tooMany('ip = $1', [key])) throw new UserError('Demasiadas solicitudes. Espera 15 minutos.');
     await q('INSERT INTO attempts(ip, email, t) VALUES($1, $2, $3)', [key, '', now()]);
     if (emailOk(em) && (await one('SELECT 1 FROM users WHERE email = $1 AND verified AND NOT hidden', [em])))
-      await resetMail(em, await makeCode('reset:' + em));
+      if (!(await resetMail(em, await makeCode('reset:' + em))).ok && !DEBUG_MAIL)
+        throw new UserError('No pudimos enviar el código en este momento. Intenta más tarde o avisa a un administrador del club.');
     await updateSession({ pend_reset: em });
     if (!DEBUG_MAIL) await flash('Si el correo existe, enviamos un codigo.');
     return '/reset';
@@ -396,8 +398,8 @@ export async function approveUser(fd) {
   const x = await one('SELECT * FROM users WHERE id = $1 AND verified AND NOT approved AND NOT hidden AND name IS NOT NULL', [int(fd, 'id')]);
   if (x) {
     await q('UPDATE users SET approved = true WHERE id = $1', [x.id]);
-    await approvedMail(x.email, x.nick);
-    await flash('Miembro aceptado. Se le envio un correo de bienvenida.');
+    const sent = await approvedMail(x.email, x.nick);
+    await flash(sent.ok ? 'Miembro aceptado. Se le envió un correo de bienvenida.' : `Miembro aceptado, pero el correo de bienvenida falló: ${sent.error}`, sent.ok ? 'ok' : 'err');
   }
   redirect('/admin');
 }
@@ -420,9 +422,11 @@ export async function delUser(fd) { await removeUser(fd, false); }
 export async function setRole(fd) {
   await run('/admin', async () => {
     const u = await superOnly(), id = int(fd, 'id'), role = str(fd, 'role') === 'admin' ? 'admin' : 'member';
+    const board = !!fd.get('board'), title = cut(txt(fd, 'title'), 60);
     if (id === u.id && role !== 'admin') throw new UserError('No puedes quitarte tu propio rol.');
-    await q(`UPDATE users SET role = $1, title = $2, "rank" = $3 WHERE id = $4 AND hidden = false`, [role, cut(txt(fd, 'title'), 60), int(fd, 'rank'), id]);
-    if (role === 'admin') await q('UPDATE users SET approved = true WHERE id = $1 AND hidden = false', [id]);
+    if (board && !title) throw new UserError('Escribe el cargo para mostrarlo en Directiva (ej. Presidente, Tesorero).');
+    await q(`UPDATE users SET role = $1, title = $2, "rank" = $3, board = $4 WHERE id = $5 AND hidden = false`, [role, title, int(fd, 'rank'), board, id]);
+    if (role === 'admin' || board) await q('UPDATE users SET approved = true WHERE id = $1 AND hidden = false', [id]);
     await flash('Rol actualizado.');
   });
 }
@@ -434,12 +438,12 @@ export async function bulk(fd) {
     const ids = [...new Set(fd.getAll('ids').map((v) => parseInt(v, 10)).filter((n) => n > 0))];
     const scope = str(fd, 'scope'), op = str(fd, 'op');
     if (!ids.length) throw new UserError('Selecciona al menos un elemento.');
-    let n = 0;
+    let n = 0, failed = 0;
     for (const id of ids) {
       if (scope === 'users' || scope === 'pending') {
         const x = await one('SELECT * FROM users WHERE id = $1 AND hidden = false', [id]);
         if (!x || x.id === u.id) continue;
-        if (op === 'approve') { if (!x.approved && x.name) { await q('UPDATE users SET approved = true WHERE id = $1', [id]); await approvedMail(x.email, x.nick); n++; } }
+        if (op === 'approve') { if (!x.approved && x.name) { await q('UPDATE users SET approved = true WHERE id = $1', [id]); if (!(await approvedMail(x.email, x.nick)).ok) failed++; n++; } }
         else if (op === 'reject') { if (!x.approved) { await purgeUser(x); n++; } }
         else if (op === 'delete') { if (x.role === 'admin' && !isSuper(u)) continue; await purgeUser(x); n++; }
       } else if (scope === 'products') {
@@ -450,7 +454,7 @@ export async function bulk(fd) {
         if (r) { await q('DELETE FROM media WHERE id = $1', [id]); await rmfile(r.file); n++; }
       }
     }
-    await flash(`${n} elemento(s) procesado(s).`);
+    await flash(`${n} elemento(s) procesado(s).` + (failed ? ` ${failed} correo(s) de bienvenida no se pudieron enviar (revisa la sección Correo).` : ''), failed ? 'err' : 'ok');
   });
 }
 
@@ -479,5 +483,17 @@ export async function saveSettings(fd) {
       if (file || fd.get('hero_clear')) { await rmfile(cur[k]); await setcfg(k, file || ''); }
     }
     await flash('Cambios guardados.');
+  });
+}
+
+/* Prueba de correo: SOLO super admin. Muestra el error exacto si falla. */
+export async function testMail(fd) {
+  await run('/admin', async () => {
+    await superOnly();
+    const to = txt(fd, 'to').toLowerCase();
+    if (!emailOk(to)) throw new UserError('Escribe un correo válido para la prueba.');
+    const r = await sendMail(to, 'Prueba GLC', 'Si lees esto, el envío de correos del sitio funciona.');
+    if (!r.ok) throw new UserError('El correo NO se envió: ' + r.error);
+    await flash(`Correo de prueba enviado a ${to}. Revisa la bandeja de entrada y la carpeta de spam.`);
   });
 }

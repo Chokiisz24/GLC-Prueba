@@ -43,8 +43,9 @@ export default function UploadForm({ action, uid, kind = 'image', className, sty
     } catch (e) {
       setBusy('');
       let why = e?.message || 'error desconocido';
-      if (/client token/i.test(why)) {             // la libreria oculta el motivo: lo preguntamos al servidor
-        try { why = (await (await fetch('/api/upload?kind=' + kind)).json()).reason || why; } catch {}
+      const store = /store does not exist/i.test(why);
+      if (store || /client token/i.test(why)) {    // la libreria oculta el motivo: lo preguntamos al servidor
+        try { why = (await (await fetch('/api/upload?kind=' + (store ? '__store' : kind))).json()).reason || why; } catch {}
       }
       setErr(`No se pudo subir: ${why}`);
     }
