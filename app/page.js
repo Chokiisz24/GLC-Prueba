@@ -3,12 +3,13 @@ import Link from 'next/link';
 import { getSettings } from '@/lib/config';
 import { pageUser } from '@/lib/auth';
 import { Img, Lines } from '@/components/Bits';
+import Page from '@/components/Page';
 
 export default async function Home() {
   const [u, s] = [await pageUser(), await getSettings()];
   const heroes = ['hero1', 'hero2', 'hero3'].map((k) => s[k]).filter(Boolean);
   return (
-    <>
+    <Page>
       <section className="hero-full">
         <div className="hero-in">
           <div className="eyebrow"><span>—</span> {s.hero_eyebrow}</div>
@@ -21,6 +22,6 @@ export default async function Home() {
         </div>
       </section>
       {heroes.length > 0 && <div className={'hero' + (s.hero_blend === '1' ? ' blend' : '')}>{heroes.map((h) => <Img key={h} src={h} />)}</div>}
-    </>
+    </Page>
   );
 }

@@ -10,9 +10,9 @@ header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 7
 .logo{height:34px;width:auto;border-radius:8px;display:block}
 @media(max-width:600px){.brand span{display:none}}
 @media(max-width:1280px){nav{order:3;flex-basis:100%;min-width:0}}
-nav{display:flex;gap:.2rem;flex:1;overflow-x:auto;scrollbar-width:none}
+nav{display:flex;gap:.2rem;flex:1;overflow-x:auto;scrollbar-width:none;position:relative;isolation:isolate}
 nav a{color:var(--t);opacity:.7;padding:.4rem .8rem;border-radius:999px;font-size:.92rem;white-space:nowrap}
-nav a:hover{opacity:1;background:var(--line);text-decoration:none}nav a.on{opacity:1;background:var(--line);font-weight:600}
+nav a:hover{opacity:1;text-decoration:none}nav a.on{opacity:1;font-weight:600}
 .acct{display:flex;gap:.4rem;align-items:center;margin-left:auto}.acct form{margin:0}
 
 /* Botones tipo pastilla */
@@ -30,7 +30,8 @@ h2{font-size:1.5rem;letter-spacing:-.02em;margin:2rem 0 1rem}h3{margin:.2rem 0;f
 /* Tarjetas */
 .card{background:var(--card);border-radius:20px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.05)}
 a.card{color:inherit}
-a.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.14);text-decoration:none}
+a.card:hover{text-decoration:none}
+@media(hover:none),(pointer:coarse){a.card:active{transform:scale(.98)}}
 .card img,.card video{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;display:block}
 .who{display:flex;align-items:center;gap:.7rem;margin-top:.8rem}.who h3{margin:0}
 .card img.av{width:52px;height:52px;aspect-ratio:1;border-radius:50%;flex:none}
@@ -46,7 +47,7 @@ input,select,textarea{width:100%;padding:.7rem .9rem;border-radius:12px;border:1
 input:focus,select:focus,textarea:focus{outline:2px solid var(--a);outline-offset:-1px}
 input[type=checkbox]{width:auto}input[type=color]{padding:2px;height:40px;width:70px}
 select.auto,input.auto{width:auto}
-summary{list-style:none;display:inline-block}summary::-webkit-details-marker{display:none}
+summary{list-style:none;display:inline-block;cursor:pointer}summary::-webkit-details-marker{display:none}
 .msg{max-width:1100px;margin:1rem auto 0;padding:.8rem 1.1rem;border-radius:14px;background:#30d15822;border:1px solid #30d15866}.msg.err{background:#ff3b3022;border-color:#ff3b3066}
 small,.mut{color:var(--mut)}.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse}
 td,th{padding:.6rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
@@ -129,3 +130,86 @@ button:active,.btn:active{transform:scale(.97)}
 #lb button{position:absolute;background:#ffffff26;color:#fff;width:46px;height:46px;border-radius:50%;font-size:1.7rem;padding:0;line-height:1}#lb button:hover{background:#ffffff40;transform:none;box-shadow:none}
 .lb-x{top:1rem;right:1rem}.lb-p{left:1rem;top:calc(50% - 23px)}.lb-n{right:1rem;top:calc(50% - 23px)}#lb.single .lb-p,#lb.single .lb-n{display:none}
 footer{text-align:center;padding:2rem;color:var(--mut);font-size:.85rem}
+
+/* ===================================================================
+ * ANIMACIONES CON REACT (cabecera, tarjetas, paneles, transiciones, lightbox)
+ * =================================================================== */
+:root{interpolate-size:allow-keywords;--ease:cubic-bezier(.2,.7,.2,1)}
+
+/* ---- Cabecera: sombra al hacer scroll + pastilla deslizante en el menu ---- */
+header{transition:box-shadow .3s,background .3s}
+header.scrolled{box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.menu,.menu-in{display:contents}
+nav .pill{position:absolute;left:0;top:0;z-index:-1;border-radius:999px;background:var(--line);pointer-events:none;
+  transition:transform .45s var(--ease),width .45s var(--ease),height .45s var(--ease),opacity .2s}
+nav a{position:relative;transition:opacity .2s}
+.burger{display:none}
+
+/* ---- Celular: boton ☰ que se convierte en X y panel que se despliega ---- */
+@media(max-width:760px){
+  .burger{display:grid;place-content:center;gap:5px;margin-left:auto;width:42px;height:42px;padding:0;border-radius:12px;background:var(--line);box-shadow:none}
+  .burger:hover{transform:none;box-shadow:none}
+  .burger span{display:block;width:18px;height:2px;border-radius:2px;background:var(--t);transition:transform .35s var(--ease),opacity .2s}
+  .bar.open .burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .bar.open .burger span:nth-child(2){opacity:0}
+  .bar.open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .menu{display:grid;flex-basis:100%;order:3;grid-template-rows:0fr;transition:grid-template-rows .4s var(--ease)}
+  .bar.open .menu{grid-template-rows:1fr}
+  .menu-in{display:block;overflow:hidden;min-height:0}
+  nav{flex-direction:column;overflow:visible;gap:.15rem;padding:.4rem 0}
+  nav a,.acct{opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .35s var(--ease)}
+  .bar.open nav a,.bar.open .acct{opacity:.85;transform:none;transition-delay:calc(var(--i) * 35ms + 60ms)}
+  .bar.open nav a.on{opacity:1}
+  nav a{font-size:1.05rem;padding:.65rem 1rem}
+  .acct{margin:0;padding:.3rem 0 1rem;flex-wrap:wrap}
+  .bar.open .acct{opacity:1}
+}
+
+/* ---- Tarjetas: inclinacion 3D con brillo que sigue al cursor ---- */
+.grid>.card{position:relative;transition:transform .55s var(--ease),box-shadow .35s,background .2s,opacity .6s ease}
+.grid>.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.18),transparent 42%)}
+.grid>.card.tilt{transform:perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(-4px);
+  transition:transform .12s linear,box-shadow .35s;box-shadow:0 22px 44px rgba(0,0,0,.18)}
+.grid>.card.tilt::after{opacity:1}
+
+/* ---- Paneles desplegables ("+ Crear evento", "+ Subir"...) se abren suavemente ---- */
+details::details-content{block-size:0;overflow:hidden;opacity:0;
+  transition:block-size .45s var(--ease),opacity .3s,content-visibility .45s allow-discrete}
+details[open]::details-content{block-size:auto;opacity:1}
+details[open]>summary.btn{filter:brightness(.92)}
+
+/* ---- Avisos: los de exito muestran una barra de tiempo antes de ocultarse ---- */
+.msg{position:relative;overflow:hidden}
+.msg:not(.err)::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;background:#30d158;transform-origin:left;animation:drain 6s linear forwards}
+@keyframes drain{to{transform:scaleX(0)}}
+
+/* ---- Transiciones entre paginas (React View Transitions) ---- */
+::view-transition{pointer-events:none}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}
+::view-transition-group(site-header){animation:none;z-index:100}
+::view-transition-old(site-header){display:none}
+::view-transition-new(site-header){animation:none}
+@keyframes vt-fade{from{opacity:0}}
+@keyframes vt-rise{from{opacity:0;translate:0 16px}}
+@keyframes vt-slide{from{translate:var(--slide-offset)}to{translate:0}}
+::view-transition-old(.nav-tab){animation:140ms ease-in both vt-fade reverse}
+::view-transition-new(.nav-tab){animation:320ms var(--ease) 90ms both vt-rise}
+::view-transition-old(.nav-forward){--slide-offset:-60px;animation:150ms ease-in both vt-fade reverse,400ms ease-in-out both vt-slide reverse}
+::view-transition-new(.nav-forward){--slide-offset:60px;animation:210ms ease-out 150ms both vt-fade,400ms ease-in-out both vt-slide}
+::view-transition-old(.nav-back){--slide-offset:60px;animation:150ms ease-in both vt-fade reverse,400ms ease-in-out both vt-slide reverse}
+::view-transition-new(.nav-back){--slide-offset:-60px;animation:210ms ease-out 150ms both vt-fade,400ms ease-in-out both vt-slide}
+/* La foto del Lancer "vuela" de la tarjeta a la pagina del miembro */
+::view-transition-group(.morph){animation-duration:460ms;animation-timing-function:var(--ease);z-index:50}
+::view-transition-image-pair(.morph){animation-name:vt-blur}
+@keyframes vt-blur{35%{filter:blur(2px)}}
+/* Lightbox: la foto crece desde su miniatura */
+::view-transition-group(lb-pic){animation-duration:380ms;animation-timing-function:var(--ease);z-index:200}
+html.lb-open{overflow:hidden}
+.lb-k{position:absolute;top:1.4rem;left:50%;translate:-50% 0;color:#ffffffb0;font-size:.85rem;letter-spacing:.04em}
+#lb{touch-action:pan-y;background:rgba(0,0,0,.9);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+
+@media(prefers-reduced-motion:reduce){
+  ::view-transition-old(*),::view-transition-new(*),::view-transition-group(*){animation-duration:0s!important;animation-delay:0s!important}
+  .grid>.card.tilt{transform:none}
+}

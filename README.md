@@ -80,6 +80,20 @@ sesión en cookie firmada HttpOnly/SameSite/Secure que se invalida al cambiar la
 consultas parametrizadas · salida escapada por React · CSP y cabeceras de seguridad · subidas limitadas por tipo, tamaño y carpeta
 del usuario · permisos validados en el servidor · mensajes genéricos (no revelan si un correo existe) · credenciales solo en variables de entorno.
 
+## Animaciones
+| Dónde | Qué hace | Archivo |
+|---|---|---|
+| Miembros y Multimedia | La foto del Lancer y el avatar "vuelan" de la tarjeta a la página de detalle (y de regreso) | `components/Page.js` (`Morph`) |
+| Entre páginas | Deslizamiento hacia adelante al entrar a un detalle, hacia atrás al volver, fundido entre secciones del menú; la cabecera queda fija | `components/Page.js`, `app/globals.css` |
+| Menú | Pastilla que se desliza a la sección activa; en celular botón ☰ con panel animado | `components/SiteHeader.js` |
+| Tarjetas | Inclinación 3D con brillo que sigue al cursor (solo con mouse) | `components/CardFx.js` |
+| Lightbox | La foto crece desde su miniatura, se desliza entre imágenes, deslizar con el dedo en celular | `components/Lightbox.js` |
+| Paneles y avisos | "+ Crear evento", "+ Subir"... se despliegan suave; los avisos de éxito muestran barra de tiempo | `app/globals.css` |
+
+Todo respeta la opción "reducir movimiento" del sistema. Las transiciones entre páginas usan la View Transitions API:
+en Chrome, Edge y Safari recientes se ven completas; en navegadores sin soporte el sitio funciona igual, sin animar.
+Para que una tarjeta nueva no se incline, pon la clase `no-tilt` en su `.grid`.
+
 ## Cambios respecto a la versión PHP
 - Corregido: cambiar roles no funcionaba (la línea que leía `id` y `role` estaba comentada por error).
 - Las sesiones abiertas se cierran al cambiar la contraseña.

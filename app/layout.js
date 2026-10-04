@@ -7,7 +7,8 @@ import { one } from '@/lib/db';
 import { readFlash } from '@/lib/flash';
 import { blobOk } from '@/lib/blob';
 import { logout } from './actions';
-import NavLinks from '@/components/NavLinks';
+import SiteHeader from '@/components/SiteHeader';
+import CardFx from '@/components/CardFx';
 import Flash from '@/components/Flash';
 import Lightbox from '@/components/Lightbox';
 import Reveal from '@/components/Reveal';
@@ -42,24 +43,17 @@ export default async function RootLayout({ children }) {
     <html lang="es">
       <head><style dangerouslySetInnerHTML={{ __html: themeCss(s) }} /></head>
       <body>
-        <header>
-          <div className="bar">
-            <Link className="brand" href="/">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="logo" src="/glc-icon.png" alt="GLC" /><span>{s.club_name}</span>
-            </Link>
-            <NavLinks />
-            <div className="acct">
-              {isAdmin(u) && <Link className="btn s" href="/admin">Admin{pend ? ` (${pend})` : ''}</Link>}
-              {u ? (
-                <>
-                  <Link className="btn s" href="/profile">Mi perfil</Link>
-                  <form action={logout}><button className="s">Salir</button></form>
-                </>
-              ) : <Link className="btn" href="/login">Entrar</Link>}
-            </div>
-          </div>
-        </header>
+        <SiteHeader club={s.club_name} acct={
+          <>
+            {isAdmin(u) && <Link className="btn s" href="/admin" transitionTypes={['nav-tab']}>Admin{pend ? ` (${pend})` : ''}</Link>}
+            {u ? (
+              <>
+                <Link className="btn s" href="/profile" transitionTypes={['nav-tab']}>Mi perfil</Link>
+                <form action={logout}><button className="s">Salir</button></form>
+              </>
+            ) : <Link className="btn" href="/login" transitionTypes={['nav-tab']}>Entrar</Link>}
+          </>
+        } />
         <Flash f={f} />
         {u && !u.approved && <PendingBanner />}
         <main>{children}</main>
@@ -77,6 +71,7 @@ export default async function RootLayout({ children }) {
           © {new Date().getFullYear()} {s.club_name}
         </footer>
         <Lightbox />
+        <CardFx />
         <Reveal />
       </body>
     </html>
