@@ -1,0 +1,37 @@
+import Link from 'next/link';
+import { q, one } from '@/lib/db';
+import { pageUser } from '@/lib/auth';
+import Pager, { curPage } from '@/components/Pager';
+import { Img } from '@/components/Bits';
+
+export const metadata = { title: 'Miembros' };
+const PER = 12;
+const WHERE = 'verified AND approved AND NOT hidden AND name IS NOT NULL';
+
+export default async function MembersPage({ searchParams }) {
+  await pageUser();
+  const page = curPage(await searchParams);
+  const [list, total] = await Promise.all([
+    q(`SELECT * FROM users WHERE ${WHERE} ORDER BY created, id LIMIT ${PER} OFFSET $1`, [(page - 1) * PER]),
+    one(`SELECT COUNT(*) AS c FROM users WHERE ${WHERE}`),
+  ]);
+  return (
+    <>
+      <h1>Miembros oficiales</h1>
+      <div className="grid">
+        {list.map((m) => (
+          <Link className="card" key={m.id} href={`/members/${m.id}`}>
+            <Img src={m.car_photo} />
+            <div className="who">
+              <Img src={m.photo} className="av" />
+              <div><h3>{m.nick}</h3><small>{m.city}, {m.country} · {m.age} años</small></div>
+            </div>
+            <p>Lancer {m.version} {m.year} · {m.color}<br /><small>Mods: {m.mods}</small></p>
+          </Link>
+        ))}
+      </div>
+      {!list.length && <p className="mut">Todavía no hay miembros aceptados.</p>}
+      <Pager total={total.c} per={PER} page={page} base="/members" />
+    </>
+  );
+}
