@@ -42,7 +42,11 @@ export default function UploadForm({ action, uid, kind = 'image', className, sty
       start(() => action(fd));
     } catch (e) {
       setBusy('');
-      setErr(e?.message ? `No se pudo subir: ${e.message}` : 'No se pudo subir el archivo.');
+      let why = e?.message || 'error desconocido';
+      if (/client token/i.test(why)) {             // la libreria oculta el motivo: lo preguntamos al servidor
+        try { why = (await (await fetch('/api/upload?kind=' + kind)).json()).reason || why; } catch {}
+      }
+      setErr(`No se pudo subir: ${why}`);
     }
   }
 
