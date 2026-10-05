@@ -163,10 +163,11 @@ export async function saveProfile(fd) {
     const age = int(fd, 'age'), yr = int(fd, 'year'), ver = str(fd, 'version');
     const maxYear = new Date().getFullYear() + 1;
     if (age < 16 || age > 99 || yr < 2000 || yr > maxYear || !VERSIONS.includes(ver)) throw new UserError('Edad, año o version invalidos.');
+    const socials = readSocials(fd);
     const ph = fileField(fd, 'photo', u.id, { required: !u.photo }) || u.photo;
     const cp = fileField(fd, 'car_photo', u.id, { required: !u.car_photo }) || u.car_photo;
-    await q(`UPDATE users SET name=$1, nick=$2, city=$3, country=$4, age=$5, "year"=$6, version=$7, color=$8, mods=$9, photo=$10, car_photo=$11 WHERE id=$12`,
-      [d.name, d.nick, d.city, d.country, age, yr, ver, d.color, d.mods, ph, cp, u.id]);
+    await q(`UPDATE users SET name=$1, nick=$2, city=$3, country=$4, age=$5, "year"=$6, version=$7, color=$8, mods=$9, photo=$10, car_photo=$11, socials=$12 WHERE id=$13`,
+      [d.name, d.nick, d.city, d.country, age, yr, ver, d.color, d.mods, ph, cp, socials, u.id]);
     await rmfile(ph !== u.photo ? u.photo : null, cp !== u.car_photo ? u.car_photo : null);
     if (u.approved) { await flash('Perfil guardado.'); return '/members'; }
     await flash('Perfil enviado. Un administrador revisara tu solicitud.');
@@ -321,6 +322,20 @@ export async function delProduct(fd) {
 
 /* =================== PAGINA PERSONAL DEL MIEMBRO (dueno o admin) =================== */
 
+// Redes del miembro (campos ms_facebook, ms_instagram...): opcionales; solo https y del dominio de cada red. Devuelve JSON.
+function readSocials(fd) {
+  const out = {};
+  for (const [k, [name, hosts]] of Object.entries(SOCIAL)) {
+    const v = txt(fd, 'ms_' + k);
+    if (!v) continue;
+    let ok = false;
+    try { const x = new URL(v); ok = v.length <= 300 && x.protocol === 'https:' && hosts.includes(x.hostname.toLowerCase()); } catch {}
+    if (!ok) throw new UserError(`Enlace de ${name} invalido (debe empezar con https:// y ser de ${name}).`);
+    out[k] = v;
+  }
+  return JSON.stringify(out);
+}
+
 async function canEdit(u, uid) {
   if (!(await one('SELECT 1 FROM users WHERE id = $1 AND hidden = false', [uid])) || (u.id !== uid && !isAdmin(u)))
     throw new UserError('No tienes permiso para modificar este perfil.');
@@ -331,8 +346,8 @@ export async function bioSave(fd) {
   await run(`/members/${uid}`, async () => {
     const u = await member();
     await canEdit(u, uid);
-    await q('UPDATE users SET bio = $1 WHERE id = $2', [cut(txt(fd, 'bio'), 1000), uid]);
-    await flash('Descripcion guardada.');
+    await q('UPDATE users SET bio = $1, socials = $2 WHERE id = $3', [cut(txt(fd, 'bio'), 1000), readSocials(fd), uid]);
+    await flash('Pagina guardada.');
   });
 }
 

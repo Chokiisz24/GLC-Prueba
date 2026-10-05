@@ -3,6 +3,7 @@ import { q, one } from '@/lib/db';
 import { pageUser } from '@/lib/auth';
 import Pager, { curPage } from '@/components/Pager';
 import { Img } from '@/components/Bits';
+import { SOCIAL, parseSocials } from '@/lib/config';
 import Page, { Morph } from '@/components/Page';
 import { StaggerGrid } from '@/components/Stagger';
 
@@ -21,16 +22,27 @@ export default async function MembersPage({ searchParams }) {
     <Page>
       <h1>Miembros oficiales</h1>
       <StaggerGrid>
-        {list.map((m) => (
-          <Link className="card" key={m.id} href={`/members/${m.id}`} transitionTypes={['nav-forward']}>
+        {list.map((m) => {
+          const socials = Object.entries(parseSocials(m.socials));
+          return (
+          <div className="card link" key={m.id}>
+            <Link className="cover" href={`/members/${m.id}`} transitionTypes={['nav-forward']} aria-label={`Ver la página de ${m.nick}`} />
             <Morph name={`car-${m.id}`}><Img src={m.car_photo} /></Morph>
             <div className="who">
               <Morph name={`av-${m.id}`}><Img src={m.photo} className="av" /></Morph>
               <div><h3>{m.nick}</h3>{m.board && <span className="badge">{m.title}</span>}<small>{m.city}, {m.country} · {m.age} años</small></div>
             </div>
             <p>Lancer {m.version} {m.year} · {m.color}<br /><small>Mods: {m.mods}</small></p>
-          </Link>
-        ))}
+            {socials.length > 0 && (
+              <div className="soc mini">
+                {socials.map(([k, url]) => (
+                  <a key={k} href={url} target="_blank" rel="noopener noreferrer nofollow" aria-label={`${SOCIAL[k][0]} de ${m.nick}`} title={SOCIAL[k][0]} dangerouslySetInnerHTML={{ __html: SOCIAL[k][2] }} />
+                ))}
+              </div>
+            )}
+          </div>
+          );
+        })}
       </StaggerGrid>
       {!list.length && <p className="mut">Todavía no hay miembros aceptados.</p>}
       <Pager total={total.c} per={PER} page={page} base="/members" />

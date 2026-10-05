@@ -341,3 +341,6 @@ td label.chk{color:var(--t);font-size:.85rem;white-space:nowrap}
 }
 
 .soc.mini{justify-content:flex-start;margin:.2rem 0 1rem}.soc.mini a{width:38px;height:38px}.soc.mini svg{width:19px;height:19px}
+/* Tarjeta de miembro: enlace invisible que cubre toda la tarjeta; los iconos de redes quedan por encima */
+.card.link{color:inherit}.card.link .cover{position:absolute;inset:0;z-index:1;border-radius:inherit}.card.link .soc{position:relative;z-index:2}
+.card.link:hover img.av{transform:scale(1.12)}@media(hover:none),(pointer:coarse){.card.link:active{transform:scale(.98)}}
