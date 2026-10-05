@@ -8,7 +8,7 @@ export default function Pager({ total, per, page, base }) {
   return (
     <div className="pager">
       {Array.from({ length: n }, (_, k) => k + 1).map((i) => (
-        <Link key={i} className={i === page ? 'on' : ''} href={`${base}?pg=${i}`}>{i}</Link>
+        <Link key={i} className={i === page ? 'on' : ''} href={`${base}${base.includes('?') ? '&' : '?'}pg=${i}`}>{i}</Link>
       ))}
     </div>
   );
