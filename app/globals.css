@@ -339,3 +339,5 @@ td label.chk{color:var(--t);font-size:.85rem;white-space:nowrap}
   .side{border-left:0;border-top:1px solid var(--line)}
   .thread{overflow:visible}
 }
+
+.soc.mini{justify-content:flex-start;margin:.2rem 0 1rem}.soc.mini a{width:38px;height:38px}.soc.mini svg{width:19px;height:19px}

@@ -2,7 +2,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { me } from '@/lib/auth';
-import { VERSIONS } from '@/lib/config';
+import { VERSIONS, parseSocials } from '@/lib/config';
+import SocialFields from '@/components/SocialFields';
 import { saveProfile } from '../actions';
 import UploadForm from '@/components/UploadForm';
 import Page from '@/components/Page';
@@ -30,6 +31,7 @@ export default async function ProfilePage() {
         <textarea name="mods" placeholder="Modificaciones (o 'Ninguna')" defaultValue={u.mods || ''} maxLength={200} required />
         <label>Tu foto <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" required={!u.photo} /></label>
         <label>Foto del carro <input type="file" name="car_photo" accept="image/jpeg,image/png,image/webp" required={!u.car_photo} /></label>
+        <SocialFields values={parseSocials(u.socials)} />
         <button>Guardar</button>
       </UploadForm>
     </Page>

@@ -2,6 +2,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { q, one } from '@/lib/db';
+import { SOCIAL, parseSocials } from '@/lib/config';
+import SocialFields from '@/components/SocialFields';
 import { pageUser, isAdmin } from '@/lib/auth';
 import { MAX_IMG_MB, MAX_VIDEO_MB } from '@/lib/limits';
 import { bioSave, garageUp, garageDel } from '../../actions';
@@ -17,6 +19,7 @@ export default async function MemberPage({ params }) {
   if (!m) redirect('/members');
   const own = u && u.id === m.id;
   const can = u?.approved && (own || isAdmin(u));
+  const socials = parseSocials(m.socials);
   const items = await q('SELECT * FROM garage WHERE user_id = $1 ORDER BY id DESC', [mid]);
 
   return (
@@ -34,6 +37,13 @@ export default async function MemberPage({ params }) {
         </p>
         <p className="rise" style={{ '--i': 2 }}><b>Modificaciones:</b> {m.mods}</p>
         {m.bio && <p className="rise" style={{ '--i': 3 }}><Lines text={m.bio} /></p>}
+        {Object.keys(socials).length > 0 && (
+          <div className="soc mini rise" style={{ '--i': 4 }}>
+            {Object.entries(socials).map(([k, url]) => (
+              <a key={k} href={url} target="_blank" rel="noopener noreferrer nofollow" aria-label={`${SOCIAL[k][0]} de ${m.nick}`} title={SOCIAL[k][0]} dangerouslySetInnerHTML={{ __html: SOCIAL[k][2] }} />
+            ))}
+          </div>
+        )}
         {can && own && <Link className="btn s" href="/profile">Editar datos de mi perfil</Link>}
       </div>
 
@@ -43,7 +53,8 @@ export default async function MemberPage({ params }) {
           <form className="f card" action={bioSave} style={{ marginTop: '1rem' }}>
             <Hidden name="uid" value={mid} />
             <label>Sobre el miembro y su Lancer<textarea name="bio" rows={4} maxLength={1000} defaultValue={m.bio || ''} /></label>
-            <button>Guardar descripción</button>
+            <SocialFields values={socials} />
+            <button>Guardar cambios</button>
           </form>
           <UploadForm action={garageUp} uid={u.id} kind="media" className="f card" style={{ marginTop: '1rem' }}>
             <Hidden name="uid" value={mid} />
