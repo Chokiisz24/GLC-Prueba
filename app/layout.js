@@ -60,9 +60,9 @@ export default async function RootLayout({ children }) {
         <footer className="foot">
           <div className="foot-in">
             <Link href="/" className="foot-brand"><img src="/glc-icon.png" alt="GLC" /><span>{s.club_name}</span></Link>
-            <nav className="foot-nav">
+            <div className="foot-nav">
               {[['/', 'Inicio'], ['/board', 'Directiva'], ['/events', 'Eventos'], ['/members', 'Miembros'], ['/media', 'Multimedia'], ['/sales', 'Ventas']].map(([h, l]) => <Link key={h} href={h}>{l}</Link>)}
-            </nav>
+            </div>
             <div className="foot-r">
               <span className="tag">LANCERS UNIDOS, SIEMPRE <i>///</i></span>
               {links.length > 0 && (

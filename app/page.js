@@ -58,11 +58,11 @@ export default async function Home() {
         </section>
 
         <div className="wrap">
-          <nav className="qas">
+          <div className="qas">
             {TILES.map(([href, ico, t, d]) => (
               <Link key={href} href={href} className="qa"><Ico n={ico} /><span><b>{t}</b><small>{d}</small></span><i>›</i></Link>
             ))}
-          </nav>
+          </div>
 
           <div className="cols">
             <section>
