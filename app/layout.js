@@ -57,18 +57,24 @@ export default async function RootLayout({ children }) {
         <Flash f={f} />
         {u && !u.approved && <PendingBanner />}
         <main>{children}</main>
-        <footer>
-          {links.length > 0 && (
-            <>
-              <div className="soc-t">Síguenos</div>
-              <div className="soc">
-                {links.map(([k, [name, , svg]]) => (
-                  <a key={k} href={s['soc_' + k]} target="_blank" rel="noopener noreferrer" aria-label={name} title={name} dangerouslySetInnerHTML={{ __html: svg }} />
-                ))}
-              </div>
-            </>
-          )}
-          © {new Date().getFullYear()} {s.club_name}
+        <footer className="foot">
+          <div className="foot-in">
+            <Link href="/" className="foot-brand"><img src="/glc-icon.png" alt="GLC" /><span>{s.club_name}</span></Link>
+            <nav className="foot-nav">
+              {[['/', 'Inicio'], ['/board', 'Directiva'], ['/events', 'Eventos'], ['/members', 'Miembros'], ['/media', 'Multimedia'], ['/sales', 'Ventas']].map(([h, l]) => <Link key={h} href={h}>{l}</Link>)}
+            </nav>
+            <div className="foot-r">
+              <span className="tag">LANCERS UNIDOS, SIEMPRE <i>///</i></span>
+              {links.length > 0 && (
+                <div className="soc">
+                  {links.map(([k, [name, , svg]]) => (
+                    <a key={k} href={s['soc_' + k]} target="_blank" rel="noopener noreferrer" aria-label={name} title={name} dangerouslySetInnerHTML={{ __html: svg }} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="foot-c"><span>© {new Date().getFullYear()} {s.club_name}. Todos los derechos reservados.</span><span>ランサーは永遠に</span></div>
         </footer>
         <Lightbox />
         <CardFx />

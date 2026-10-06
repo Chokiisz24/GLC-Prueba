@@ -11,7 +11,23 @@ export default function UploadForm({ action, uid, kind = 'image', className, sty
   const [pending, start] = useTransition();
   const ref = useRef(null), was = useRef(false);
 
-  useEffect(() => { if (was.current && !pending) ref.current?.reset(); was.current = pending; }, [pending]);
+  useEffect(() => { if (was.current && !pending) { ref.current?.reset(); ref.current?.querySelectorAll('.pv').forEach((n) => n.remove()); } was.current = pending; }, [pending]);
+
+  // Vista previa pequeña justo debajo de cada campo de archivo (foto o video elegido)
+  function preview(e) {
+    const inp = e.target;
+    if (inp.type !== 'file') return;
+    let pv = inp.nextElementSibling?.classList.contains('pv') ? inp.nextElementSibling : null;
+    if (!pv) { pv = document.createElement('div'); pv.className = 'pv'; inp.after(pv); }
+    pv.querySelectorAll('img,video').forEach((n) => URL.revokeObjectURL(n.src));
+    pv.textContent = '';
+    const f = inp.files?.[0];
+    if (!f) return;
+    const el = document.createElement(f.type.startsWith('video/') ? 'video' : 'img');
+    el.src = URL.createObjectURL(f);
+    if (el.tagName === 'VIDEO') { el.muted = true; el.preload = 'metadata'; }
+    pv.append(el);
+  }
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -53,7 +69,7 @@ export default function UploadForm({ action, uid, kind = 'image', className, sty
 
   const status = pending ? 'Guardando…' : busy;
   return (
-    <form ref={ref} className={className} style={style} onSubmit={onSubmit}>
+    <form ref={ref} className={className} style={style} onSubmit={onSubmit} onChange={preview}>
       <fieldset disabled={!!status} style={{ display: 'contents' }}>{children}</fieldset>
       {status && <small aria-live="polite">{status}</small>}
       {err && <div className="msg err" style={{ margin: 0 }}>{err}</div>}
