@@ -388,3 +388,5 @@ body:has(.home2) header{background:rgba(10,10,12,.7)}
 .foot .soc{margin:0;gap:.5rem}.foot .soc a{width:34px;height:34px;background:transparent}.foot .soc svg{width:18px;height:18px}
 .foot-c{max-width:1100px;margin:1.2rem auto 0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.4rem;color:var(--mut)}
 .pv{margin-top:.5rem}.pv>img,.pv>video{width:96px!important;height:96px!important;aspect-ratio:1!important;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block}
+/* Portada como el mockup: frase pequena en rojo y titulo pesado (2a linea en cursiva roja) */
+.hero2 .eyebrow{color:var(--a)}.hero2 h1{letter-spacing:-.01em}.hero2 h1 em{font-weight:900;padding-right:.1em}
