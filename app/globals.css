@@ -392,3 +392,12 @@ body:has(.home2) main{max-width:none;padding:0}.home2{margin:0}.home2>.wrap:last
 .hero2 .eyebrow{color:var(--a)}.hero2 h1{letter-spacing:-.01em}.hero2 h1 em{font-weight:900;padding-right:.1em}
 
 .home2 .wrap{padding-bottom:0}.home2>.wrap{margin-top:0}.home2 .cols{padding-bottom:.5rem}
+
+/* ===== Animaciones del inicio al hacer scroll (las activa components/Reveal.js): aparecen con fundido, desenfoque y deslizamiento ===== */
+.home2{overflow-x:clip}
+.js .home2 .rv{opacity:0;transform:translateY(40px) scale(.96);filter:blur(8px);transition:opacity .8s var(--ease),transform .8s var(--ease),filter .8s var(--ease)}
+.js .home2 .cols>section:nth-child(1) .rv{transform:translateX(-40px) scale(.97)}
+.js .home2 .cols>section:nth-child(3) .rv{transform:translateX(40px) scale(.97)}
+.js .home2 .gal a.rv{transform:scale(.86)}
+.js .home2 .strip a.rv{transform:translateX(56px) scale(.96)}
+.js .home2 .rv.in{opacity:1!important;transform:none!important;filter:none!important}

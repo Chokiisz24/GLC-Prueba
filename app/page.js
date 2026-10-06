@@ -59,8 +59,8 @@ export default async function Home() {
 
         <div className="wrap">
           <div className="qas">
-            {TILES.map(([href, ico, t, d]) => (
-              <Link key={href} href={href} className="qa"><Ico n={ico} /><span><b>{t}</b><small>{d}</small></span><i>›</i></Link>
+            {TILES.map(([href, ico, t, d], n) => (
+              <Link key={href} href={href} className="qa rise" style={{ '--i': n }}><Ico n={ico} /><span><b>{t}</b><small>{d}</small></span><i>›</i></Link>
             ))}
           </div>
 
