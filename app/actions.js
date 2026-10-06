@@ -485,7 +485,7 @@ export async function saveSettings(fd) {
       if (!ok) throw new UserError(`Enlace de ${name} invalido (debe empezar con https:// y ser de ${name}).`);
     }
     const bg = fileField(fd, 'bg_img', u.id, { required: false });
-    const heroes = ['hero1', 'hero2', 'hero3'].map((k) => [k, fileField(fd, k, u.id, { required: false })]);
+    const heroes = ['hero1', 'hero2', 'hero3', 'hero4'].map((k) => [k, fileField(fd, k, u.id, { required: false })]);
 
     for (const k of Object.keys(SOCIAL)) await setcfg('soc_' + k, txt(fd, 'soc_' + k));
     for (const k of ['club_name', 'about_text', 'hero_eyebrow', 'hero_title']) await setcfg(k, cut(str(fd, k), 3000));

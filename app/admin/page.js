@@ -129,11 +129,10 @@ export default async function AdminPage({ searchParams }) {
             <label>Tipografía
               <select name="font" defaultValue={s.font}>{FONTS.map((f) => <option key={f} value={f}>{fontName(f)}</option>)}</select>
             </label>
-            {['hero1', 'hero2', 'hero3'].map((k, i) => (
-              <label key={k}>Imagen de presentación {i + 1} (opcional, reemplaza)<input type="file" name={k} accept="image/jpeg,image/png,image/webp" /></label>
+            {['hero1', 'hero2', 'hero3', 'hero4'].map((k, i) => (
+              <label key={k}>Carrusel de portada: imagen {i + 1} (opcional, reemplaza)<input type="file" name={k} accept="image/jpeg,image/png,image/webp" /></label>
             ))}
-            <label className="inl"><input type="checkbox" name="hero_blend" value="1" defaultChecked={s.hero_blend === '1'} /> Fusionar el fondo negro de las imágenes de presentación (ideal para logos)</label>
-            <label className="inl"><input type="checkbox" name="hero_clear" value="1" /> Quitar las 3 imágenes de presentación actuales</label>
+            <label className="inl"><input type="checkbox" name="hero_clear" value="1" /> Quitar todas las imágenes del carrusel (vuelve a la imagen del club)</label>
             <button>Guardar cambios</button>
           </UploadForm>
         </>

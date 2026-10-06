@@ -6,6 +6,7 @@ import { pageUser } from '@/lib/auth';
 import { blobOk } from '@/lib/blob';
 import { Img } from '@/components/Bits';
 import Page from '@/components/Page';
+import HeroSlides from '@/components/HeroSlides';
 
 const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 const ICO = {   // iconos de linea (estilo Feather) para los accesos rapidos
@@ -30,6 +31,7 @@ export default async function Home() {
     q(`SELECT id, file, descr FROM media WHERE "type" = 'image' ORDER BY id DESC LIMIT 4`),
     q(`SELECT id, nick, version, car_photo FROM users WHERE verified AND approved AND NOT hidden AND name IS NOT NULL AND car_photo IS NOT NULL ORDER BY created DESC LIMIT 12`),
   ]);
+  const slides = ['hero1', 'hero2', 'hero3', 'hero4'].map((k) => s[k]).filter((v) => v && blobOk(v));   // imagenes del carrusel (admin)
   const club = Object.entries(SOCIAL).filter(([k]) => s['soc_' + k]);
   const [l1, ...rest] = String(s.hero_title ?? '').split('\n');
   const flyer = ev && ev.flyer && blobOk(ev.flyer) ? { backgroundImage: `linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.88)),url("${ev.flyer}")` } : undefined;
@@ -38,6 +40,7 @@ export default async function Home() {
     <Page>
       <div className="home2">
         <section className="hero2">
+          <HeroSlides slides={slides.length ? slides : ['/bienvenida.jpg']} />
           {club.length > 0 && (
             <div className="rail">
               {club.map(([k, [name, , svg]]) => <a key={k} href={s['soc_' + k]} target="_blank" rel="noopener noreferrer" aria-label={name} title={name} dangerouslySetInnerHTML={{ __html: svg }} />)}
@@ -55,9 +58,9 @@ export default async function Home() {
         </section>
 
         <div className="wrap">
-          <nav className="tiles">
+          <nav className="qas">
             {TILES.map(([href, ico, t, d]) => (
-              <Link key={href} href={href} className="tile"><Ico n={ico} /><span><b>{t}</b><small>{d}</small></span><i>›</i></Link>
+              <Link key={href} href={href} className="qa"><Ico n={ico} /><span><b>{t}</b><small>{d}</small></span><i>›</i></Link>
             ))}
           </nav>
 
