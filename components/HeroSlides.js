@@ -1,33 +1,105 @@
 'use client';
-/* Carrusel de la portada: varias imagenes con fundido, cambio automatico cada 5.5 s, indicadores 01, 02... clicables.
- * Se pausa al pasar el mouse y no se mueve solo si el usuario prefiere menos movimiento. */
+
 import { useEffect, useRef, useState } from 'react';
 
 export default function HeroSlides({ slides }) {
-  const [i, setI] = useState(0);
+  const [current, setCurrent] = useState(0);
+
   const paused = useRef(false);
-  const n = slides.length;
+
+  const total = slides.length;
+
 
   useEffect(() => {
-    if (n < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const t = setInterval(() => { if (!paused.current) setI((x) => (x + 1) % n); }, 5500);
-    return () => clearInterval(t);
-  }, [n]);
+    if (total < 2) return;
+
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    if (reducedMotion) return;
+
+
+    const timer = setInterval(() => {
+
+      if (!paused.current) {
+        setCurrent((prev) => (prev + 1) % total);
+      }
+
+    }, 6000);
+
+
+    return () => clearInterval(timer);
+
+  }, [total]);
+
 
   return (
     <>
-      <div className="slides" onMouseEnter={() => (paused.current = true)} onMouseLeave={() => (paused.current = false)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {slides.map((src, k) => <img key={src} src={src} alt="" className={k === i ? 'on' : ''} loading={k === 0 ? 'eager' : 'lazy'} />)}
+      <div
+        className="home-slides"
+        onMouseEnter={() => {
+          paused.current = true;
+        }}
+        onMouseLeave={() => {
+          paused.current = false;
+        }}
+      >
+
+        {slides.map((src, index) => (
+
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={`${src}-${index}`}
+            src={src}
+            alt=""
+            className={
+              index === current
+                ? 'home-slide active'
+                : 'home-slide'
+            }
+            loading={index === 0 ? 'eager' : 'lazy'}
+          />
+
+        ))}
+
       </div>
-      {n > 1 && (
-        <div className="dots" role="tablist" aria-label="Imágenes de portada">
-          {slides.map((src, k) => (
-            <button key={src} type="button" role="tab" aria-selected={k === i} aria-label={`Imagen ${k + 1}`} className={k === i ? 'on' : ''}
-              onClick={() => setI(k)}>{String(k + 1).padStart(2, '0')}</button>
+
+
+      {total > 1 && (
+
+        <div
+          className="home-slide-dots"
+          role="tablist"
+          aria-label="Imágenes de portada"
+        >
+
+          {slides.map((_, index) => (
+
+            <button
+              key={index}
+              type="button"
+              role="tab"
+              aria-selected={index === current}
+              aria-label={`Imagen ${index + 1}`}
+              className={
+                index === current ? 'active' : ''
+              }
+              onClick={() => setCurrent(index)}
+            >
+
+              <span>
+                {String(index + 1).padStart(2, '0')}
+              </span>
+
+            </button>
+
           ))}
+
         </div>
+
       )}
+
     </>
   );
 }
